@@ -1,0 +1,112 @@
+import processing.serial.*;
+
+import cc.arduino.*;
+
+Arduino arduino;
+
+color off = color(4, 79, 111);
+color on = color(255, 255, 255);
+int[] analogvalue = new int[6];
+
+
+int[] values = { Arduino.LOW, Arduino.LOW, Arduino.LOW, Arduino.LOW,
+ Arduino.LOW, Arduino.LOW, Arduino.LOW, Arduino.LOW, Arduino.LOW,
+ Arduino.LOW, Arduino.LOW, Arduino.LOW, Arduino.LOW, Arduino.LOW };
+
+PFont font;
+
+void setup() {
+  size(640, 480);
+  
+  font = createFont("SansSerif",1);
+  textFont(font,20);
+  
+  arduino = new Arduino(this, Arduino.list()[0], 9600);
+  
+  for (int i = 2; i <= 7; i++)
+    arduino.pinMode(i, Arduino.OUTPUT);
+  for (int i = 8; i <= 13; i++)    
+    arduino.pinMode(i, Arduino.INPUT);
+    
+  background(off);
+  stroke(on);
+  fill(off);
+  rect(20 , 50, 220, 70);
+  rect(310 , 50, 280, 70);
+  rect(340 , 310, 255,150);
+  
+  for (int i = 0; i < 6; i++)
+    rect(563 - i*42, 320, 20, 102);
+  
+  fill(on);
+  text("Entradas digitales",30,35);
+  text("13  12  11  10   9    8",30,110);
+  
+  text("Salidas Digitales",320,35);
+  text(" 7    6    5    4    3    2",320,110); 
+ 
+ 
+  text("Entradas analogas",370,300);
+  text("A0   A1   A2   A3   A4   A5",350,450 );
+  
+
+ 
+  textFont(font,20);
+}
+
+void draw() 
+{
+
+  for (int i = 2; i <=13; i++) 
+  {
+    if (i<8) 
+    {
+      if (values[i] == Arduino.HIGH)
+        fill(on);
+      else
+        fill(off);  
+      rect(565 - i * 35, 60, 20, 20); 
+    }
+    else
+    {
+        if (arduino.digitalRead(i) == Arduino.HIGH)
+          fill(on);
+        else
+          fill(off);
+        rect(485 - i * 35, 60, 20, 20);
+    }
+  }
+    
+
+  for (int i = 0; i <= 5; i++) 
+  {
+    fill(off);
+    rect(353 + i*42, 320, 20,102);
+//    text("A" + i + ": " + analogvalue[i],220,340 + i*20 ); 
+    
+    analogvalue[i] = arduino.analogRead(i);
+
+    fill(on);
+    rect(353 + i*42, 422, 20,  - (analogvalue[i]/10));
+//    text("A" + i + ": " + analogvalue[i],220,340 + i*20 );  
+  }
+}
+
+void mousePressed()
+{
+  int pin = ((600-mouseX) / 35);
+  
+  if ((pin>1)&& (pin<8))
+  {
+    if (values[pin] == Arduino.LOW) 
+    {
+      arduino.digitalWrite(pin, Arduino.HIGH);
+      values[pin] = Arduino.HIGH;
+    } 
+    else 
+    {
+      arduino.digitalWrite(pin, Arduino.LOW);
+      values[pin] = Arduino.LOW;
+    }
+  }
+}
